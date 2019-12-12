@@ -43,11 +43,9 @@ REGION_NAMES = ["област", "край", "республика", "якути�
 
 # doc_str -- html в простом строковом виде
 
-
 # НОМЕР
-def get_number(doc_str):
+def get_number(soup_format):
     """ достаем номер дела """
-    soup_format = BeautifulSoup(doc_str)
     header = soup_format.h1.string
     if "№" not in header:
         return "undefined"
@@ -57,9 +55,8 @@ def get_number(doc_str):
 
 
 # ДАТА
-def get_date(doc_str):
+def get_date(soup_format):
     """ достаем дату решения """
-    soup_format = BeautifulSoup(doc_str)
     header = soup_format.h1.string
     date = re.findall(REG_DATE, header.split("от ")[1])[0]
     day, month, year = date.split()[0], MONTH_DICT[date.split()[1]], date.split()[2]
@@ -67,9 +64,8 @@ def get_date(doc_str):
 
 
 # СУД
-def get_court(doc_str):
+def get_court(soup_format):
     """ достаем название суда """
-    soup_format = BeautifulSoup(doc_str)
     court_string = "undefined"
     # ищем в тегах соответствующий тег
     for i in soup_format.find_all("div"):
@@ -99,10 +95,8 @@ def is_with_region(line):
     return False
 
 
-def get_city(doc_str):
+def get_city(court_string):
     """ достаем название региона """
-#     soup_format = BeautifulSoup(doc_str)
-    court_string = get_court(doc_str)
     if "(" not in court_string:
         return "undefined"
     bracket_string = court_string.split("(")[-1].strip(")")
@@ -196,7 +190,8 @@ def get_accused_lines(doc_str):
 def kill_doubles(name_list):
     """ убираем повторяющиеся случаи """
     new_list = [x.replace(" ", "") for x in name_list]
-    if len(list(set(new_list))) == 1:
+    # if len(list(set(new_list))) == 1:
+    if len(set(new_list)) == 1:
         return [name_list[0]]
     return name_list
 
@@ -256,7 +251,7 @@ def get_accused_name(doc_str):
     accused_names = [x.replace(",", ".") for x in accused_names]
 
     # убираем повторы
-    if len(list(set(accused_names))) == 1:
+    if len(set(accused_names)) == 1:
         accused_names = list(set(accused_names))
     # выбираем самое частое имя (если среди имен были адвокаты или секретари, их это уберет)
     if accused_names:
@@ -272,11 +267,14 @@ def get_accused_name(doc_str):
 
 def get_metadict(doc_str):
     """ собираем все в словарь """
+
+    soup_format = BeautifulSoup(doc_str, 'html.parser')
+
     metadict = {}
-    metadict["date"] = get_date(doc_str)
-    metadict["number"] = get_number(doc_str)
-    metadict["court"] = get_court(doc_str)
-    metadict["region"] = get_city(doc_str)
+    metadict["date"] = get_date(soup_format)
+    metadict["number"] = get_number(soup_format)
+    metadict["court"] = get_court(soup_format)
+    metadict["region"] = get_city(metadict["court"])
     metadict["judge"] = get_judge(doc_str)
     metadict["article"] = get_article(doc_str)
     metadict["accused"] = get_accused_name(doc_str)

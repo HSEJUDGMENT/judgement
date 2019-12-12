@@ -7,9 +7,10 @@
 """
 
 import re
-from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktTrainer
+from bs4 import BeautifulSoup
+from nltk.tokenize.punkt import PunktSentenceTokenizer
 import pickle
-from sklearn.linear_model import LogisticRegression
+
 
 def to_bound_pattern(patterns):
     """формируем паттерны для разбиения документа на начальную, основную и финальную части"""
