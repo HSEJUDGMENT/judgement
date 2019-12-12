@@ -26,7 +26,7 @@ def divide_into_parts(text):
 
 def split_sentences(html, splitter_filename='models/segmenter.pk'):
     """делим на предложения основную часть приговора"""
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, 'html.parser')
     for script in soup(["script", "style"]):
         script.decompose()
     text = soup.text
