@@ -24,7 +24,7 @@ def divide_into_parts(text):
     main_part, end = re.split(end_pattern, main_part, 1)
     return begin, main_part, end
 
-def split_sentences(html, splitter_filename='./segmenter.pk'):
+def split_sentences(html, splitter_filename='models/segmenter.pk'):
     """делим на предложения основную часть приговора"""
     soup = BeautifulSoup(html)
     for script in soup(["script", "style"]):
@@ -35,7 +35,7 @@ def split_sentences(html, splitter_filename='./segmenter.pk'):
     tokenizer = PunktSentenceTokenizer(trainer_data)
     return tokenizer.tokenize(main_part)
 
-def predict_parts(text, clf_filename='./finalized_parts_clf.sav'):
+def predict_parts(text, clf_filename='models/finalized_parts_clf.sav'):
     """предсказываем метки частей для каждого предложения из основной части документа"""
     clf = pickle.load(open(clf_filename, 'rb'))
     return clf.predict(text)
