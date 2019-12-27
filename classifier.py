@@ -14,7 +14,7 @@ import pickle
 
 def to_bound_pattern(patterns):
     """формируем паттерны для разбиения документа на начальную, основную и финальную части"""
-    return re.compile('(?:{}):'.format('|'.join('\\s*'.join(x for x in s) for s in patterns)), re.IGNORECASE)
+    return re.compile('(?:{}):?'.format('|'.join('\\s*'.join(x for x in s) for s in patterns)), re.IGNORECASE)
 
 def divide_into_parts(text):
     """делим документ на части по паттернам"""
