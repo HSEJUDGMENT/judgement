@@ -31,6 +31,10 @@ python3 analyzer.py
 - [Подрядчикова Мария](https://github.com/laidhimonthegreen)
 - [Решетникова Арина](https://github.com/jackashore)
 
+Исследование было представлено на постерной сессии конференции [AINL 2019](https://ainlconf.ru/2019/program)
+
+[постер](https://github.com/HSEJUDGMENT/judgement/blob/master/poster.pdf)
+
 **Благодарности**
 
 Благодарим Андрея Заякина из "Новой газеты" и Кирилла Титаева из Европейского Университета за консультации по юридическим вопросам.
