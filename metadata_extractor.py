@@ -60,6 +60,8 @@ def get_date(soup_format):
     header = soup_format.h1.string
     date = re.findall(REG_DATE, header.split("от ")[1])[0]
     day, month, year = date.split()[0], MONTH_DICT[date.split()[1]], date.split()[2]
+    if len(day) == 1:
+        day = '0' + day
     return "{}-{}-{}".format(year, month, day)
 
 
@@ -126,11 +128,22 @@ def get_article(doc_str):
     articles = []
     for line in doc_str.split("<"):
         if "Судебная практика по применению" in line:
+            print(line)
             articles.append(line.split("ст.")[-1].strip())
+
+    # выбираем из шапки
+    header = get_first(doc_str)
+    if "ст." in "".join(header):
+        splitted_header = "".join(header).split("ст.")
+        article = BeautifulSoup(splitted_header[-1]).a
+        if article:
+            articles.append(article.string)
     articles = ", ".join(articles)
+
     if articles == "":
         articles = "нет информации по судебной практике"
     return articles
+
 
 
 # ПОДСУДИМЫЙ
@@ -183,8 +196,10 @@ def get_accused_lines(doc_str):
             accused_lines = [line]
         elif " к " in line and len(line) < 50:
             accused_lines = [line]
-
-    return accused_lines
+    if len(accused_lines) > 1:
+        return ', '.join(accused_lines)
+    else:
+        return ' '.join(accused_lines)
 
 
 def kill_doubles(name_list):
@@ -278,4 +293,8 @@ def get_metadict(doc_str):
     metadict["judge"] = get_judge(doc_str)
     metadict["article"] = get_article(doc_str)
     metadict["accused"] = get_accused_name(doc_str)
+
+    for key in metadict:
+        if not metadict[key]:
+            metadict[key] = "undefined"
     return metadict
