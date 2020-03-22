@@ -7,14 +7,18 @@
 """
 
 import re
+from pathlib import Path
 from bs4 import BeautifulSoup
-from nltk.tokenize.punkt import PunktSentenceTokenizer
+from rusenttokenize import ru_sent_tokenize
 import pickle
+
+MODELS_DIR = Path(__file__).parent / 'models'
 
 
 def to_bound_pattern(patterns):
     """формируем паттерны для разбиения документа на начальную, основную и финальную части"""
-    return re.compile('(?:{}):?'.format('|'.join('\\s*'.join(x for x in s) for s in patterns)), re.IGNORECASE)
+    return re.compile(r'(?:{}):?'.format('|'.join(r'\s*'.join(s) for s in patterns)), re.IGNORECASE)
+
 
 def divide_into_parts(text):
     """делим документ на части по паттернам"""
@@ -24,29 +28,30 @@ def divide_into_parts(text):
     main_part, end = re.split(end_pattern, main_part, 1)
     return begin, main_part, end
 
-def split_sentences(html, splitter_filename='models/segmenter.pk'):
+
+def split_sentences(html):
     """делим на предложения основную часть приговора"""
     soup = BeautifulSoup(html, 'html.parser')
     for script in soup(["script", "style"]):
         script.decompose()
     text = soup.text
     begin, main_part, end = divide_into_parts(text)
-    trainer_data = pickle.load(open(splitter_filename, 'rb'))
-    tokenizer = PunktSentenceTokenizer(trainer_data)
-    return tokenizer.tokenize(main_part)
 
-def predict_parts(text, clf_filename='models/finalized_parts_clf.sav'):
+    return ru_sent_tokenize(main_part)
+
+
+def predict_parts(text, clf_filename=MODELS_DIR/'finalized_parts_clf.sav'):
     """предсказываем метки частей для каждого предложения из основной части документа"""
     clf = pickle.load(open(clf_filename, 'rb'))
     return clf.predict(text)
+
 
 def concatenate_parts(lines, tags):
     """собираем предложения с общими метками в части"""
     current_tag = None
     groups, accum = [], []
     for i, (line, tag) in enumerate(zip(lines, tags)):
-        if tag != current_tag and (
-            len(line) > 30 or len(tags) <= (i+1) or tags[i+1] != current_tag):
+        if tag != current_tag and (len(line) > 30 or len(tags) <= (i+1) or tags[i+1] != current_tag):
             if accum:
                 groups.append([current_tag, ' '.join(accum)])
                 accum = []
@@ -60,6 +65,7 @@ def concatenate_parts(lines, tags):
         else:
             parts[x[0]].append(x[1])
     return parts
+
 
 def get_parts(html):
     """разбиваем основную часть документа на части, возвращаем json {'название части': [список строк]}"""
