@@ -16,7 +16,6 @@ python3 analyzer.py
 
 В папке `models`:
 - `finalized_parts_clf.sav` - модель-классификатор частей
-- `segmenter.pk` - модель сегментации на предложения
 
 В папке `data`:
 - пример данных
