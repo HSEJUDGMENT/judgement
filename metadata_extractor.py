@@ -40,6 +40,39 @@ MONTH_DICT = {"января": "01", "февраля": "02",
 REGION_NAMES = ["област", "край", "республика", "якутия",
                 "округ", "край", "город", "ао", "края"]
 
+# названия регионов
+ALL_REGIONS = ["Ярославская область", "Ямало-Ненецкий автономный округ", "Чукотский автономный округ",
+               "Чувашская республика", "Чеченская республика", "Челябинская область",
+               "Ханты-Мансийский автономный округ - Югра", "Хабаровский край", "Ульяновская область",
+               "Удмуртская республика", "Тюменская область", "Тульская область", "Томская область",
+               "Тверская область", "Тамбовская область", "Ставропольский край", "Смоленская область",
+               "Севастополь", "Свердловская область", "Сахалинская область", "Саратовская область",
+               "Санкт-Петербург", "Самарская область", "Рязанская область", "Ростовская область",
+               "Республика Хакасия", "Республика Тыва", "Республика Татарстан",
+               "Республика Северная Осетия - Алания", "Республика Саха (Якутия)", "Республика Мордовия",
+               "Республика Марий Эл", "Республика Крым", "Республика Коми", "Республика Карелия",
+               "Республика Калмыкия", "Республика Ингушетия", "Республика Дагестан", "Республика Бурятия",
+               "Республика Башкортостан", "Республика Алтай", "Республика Адыгея", "Псковская область",
+               "Приморский край", "Пермский край", "Пензенская область", "Орловская область",
+               "Оренбургская область", "Омская область", "Новосибирская область", "Новгородская область",
+               "Нижегородская область", "Ненецкий автономный округ", "Мурманская область", "Московская область",
+               "Москва", "Магаданская область", "Липецкая область", "Ленинградская область", "Курская область",
+               "Курганская область", "Красноярский край", "Краснодарский край", "Костромская область",
+               "Кировская область", "Кемеровская область", "Карачаево-Черкесская республика",
+               "Камчатский край", "Калужская область", "Калининградская область",
+               "Кабардино-Балкарская республика", "Иркутская область", "Ивановская область", "Забайкальский край",
+               "Еврейская автономная область", "Воронежская область", "Вологодская область",
+               "Волгоградская область", "Владимирская область", "Брянская область", "Белгородская область",
+               "Астраханская область", "Архангельская область", "Амурская область", "Алтайский край"]
+
+# ключевые слова для извлечения региона
+key2city= {"югра": "Ханты-Мансийский автономный округ - Югра",
+           "санкт": "Санкт-Петербург",
+           "якут": "Республика Саха (Якутия)",
+           "осет": "Республика Северная Осетия - Алания",
+           "севас": "Севастополь",
+           "чукот": "Чукотский автономный округ",
+           "москв": "Москва"}
 
 # doc_str -- html в простом строковом виде
 
@@ -107,6 +140,40 @@ def get_city(court_string):
     return "undefined"
 
 
+def preprocess_region(region):
+    """ обработка для нормализации региона """
+    region = region.replace("области", "область").replace("края", "край")
+    region = region.replace("ской", "ская").replace("ского", "ский")
+    region = region.replace("АС ", "")
+    return region
+
+
+def get_region(raw_region):
+    """
+    находим соответствие региону в списке
+    :param raw_region: извлеченное название региона
+    :return: регион из списка
+    """
+    region = raw_region.strip()
+    if region in ALL_REGIONS:
+        return region
+
+    for reg in ALL_REGIONS:
+        if region.lower() == reg.lower():
+            region = reg
+            return region
+
+    for key in key2city:
+        if key in region.lower():
+            return key2city[key]
+
+    region = preprocess_region(region)
+    if region in ALL_REGIONS:
+        return region
+
+    return "Регион не определен"
+
+
 # СУДЬЯ
 def get_judge(doc_str):
     """ достаем имена судей """
@@ -128,7 +195,6 @@ def get_article(doc_str):
     articles = []
     for line in doc_str.split("<"):
         if "Судебная практика по применению" in line:
-            print(line)
             articles.append(line.split("ст.")[-1].strip())
 
     # выбираем из шапки
@@ -143,7 +209,6 @@ def get_article(doc_str):
     if articles == "":
         articles = "нет информации по судебной практике"
     return articles
-
 
 
 # ПОДСУДИМЫЙ
@@ -186,8 +251,7 @@ def get_accused_lines(doc_str):
     splitted_lines = splitting_text(header)
     accused_lines = []
     for line in splitted_lines:
-        if ("осужденн" in line or "в отношении" in line or "подсудим" in line
-        or " к " in line) and len(line) < 300:
+        if ("осужденн" in line or "в отношении" in line or "подсудим" in line or " к " in line) and len(line) < 300:
             accused_lines.append(line)
 
     # короткий путь для сокращения вариантов
@@ -196,10 +260,11 @@ def get_accused_lines(doc_str):
             accused_lines = [line]
         elif " к " in line and len(line) < 50:
             accused_lines = [line]
-    if len(accused_lines) > 1:
-        return ', '.join(accused_lines)
-    else:
-        return ' '.join(accused_lines)
+    # if len(accused_lines) > 1:
+    #     return ', '.join(accused_lines)
+    # else:
+    #     return ' '.join(accused_lines)
+    return accused_lines
 
 
 def kill_doubles(name_list):
@@ -276,7 +341,7 @@ def get_accused_name(doc_str):
         else:
             accused_names = kill_doubles(accused_names)
     if not accused_names:
-        accused_names = "undefined"
+        accused_names = "нет информации"
     return accused_names
 
 
@@ -289,7 +354,7 @@ def get_metadict(doc_str):
     metadict["date"] = get_date(soup_format)
     metadict["number"] = get_number(soup_format)
     metadict["court"] = get_court(soup_format)
-    metadict["region"] = get_city(metadict["court"])
+    metadict["region"] = get_region(get_city(metadict["court"]))
     metadict["judge"] = get_judge(doc_str)
     metadict["article"] = get_article(doc_str)
     metadict["accused"] = get_accused_name(doc_str)
