@@ -204,6 +204,8 @@ def get_article(doc_str):
         article = BeautifulSoup(splitted_header[-1]).a
         if article:
             articles.append(article.string)
+    
+    articles = list(set(articles))
     articles = ", ".join(articles)
 
     if articles == "":
