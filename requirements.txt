@@ -14,3 +14,4 @@ scipy==1.4.1
 six==1.14.0
 soupsieve==2.0
 yargy==0.12.0
+pandas==1.0.3

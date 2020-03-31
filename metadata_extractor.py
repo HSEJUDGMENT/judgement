@@ -201,7 +201,7 @@ def get_article(doc_str):
     header = get_first(doc_str)
     if "ст." in "".join(header):
         splitted_header = "".join(header).split("ст.")
-        article = BeautifulSoup(splitted_header[-1]).a
+        article = BeautifulSoup(splitted_header[-1], features='lxml').a
         if article:
             articles.append(article.string)
     articles = ", ".join(articles)
