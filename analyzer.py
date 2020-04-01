@@ -40,7 +40,6 @@ def main():
                                 })
 
     output_name = 'result_{0}.xlsx'.format(str(judgment_file_path.replace('/', '').replace('.html', '')))
-    output_df.to_excel(output_name, index=False)
 
     return output_df.to_excel(output_name, index=False), print('Готово. Результат в файле ' + output_name + '.')
 
