@@ -43,6 +43,8 @@ python3 analyzer.py <название_файла>
 
 [постер](https://github.com/HSEJUDGMENT/judgement/blob/master/poster.pdf)
 
+[статья](https://github.com/HSEJUDGMENT/judgement/blob/master/paper.pdf)
+
 **Благодарности**
 
 Благодарим Андрея Заякина из "Новой газеты" и Кирилла Титаева из Европейского Университета за консультации по юридическим вопросам.
